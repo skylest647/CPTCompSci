@@ -17,6 +17,15 @@ public class Card
     {
         return Value + " of " + Suit;
     }
+    public string GetValue()
+    {
+        return Value;
+    }
+
+    public string GetSuit()
+    {
+        return Suit;
+    }
 }
 
 public class DeckManager : MonoBehaviour
