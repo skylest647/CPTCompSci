@@ -2,32 +2,6 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Card
-{
-    private string Value;
-    private string Suit;
-
-    public Card(string value, string suit)
-    {
-        Value = value;
-        Suit = suit;
-    }
-
-    public override string ToString()
-    {
-        return Value + " of " + Suit;
-    }
-    public string GetValue()
-    {
-        return Value;
-    }
-
-    public string GetSuit()
-    {
-        return Suit;
-    }
-}
-
 public class DeckManager : MonoBehaviour
 {
     private List<Card> FullDeck;      // Permanent deck with all cards

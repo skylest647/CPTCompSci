@@ -92,4 +92,8 @@ public class HandManager : MonoBehaviour
     {
         return card.GetSuit();
     }
+    public List<Card> GetHand()
+    {
+        return this.Hand;
+    } 
 }
