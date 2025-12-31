@@ -1,11 +1,11 @@
 using UnityEngine;
 using System.Collections.Generic;
-public class HandManager : MonoBehaviour
+public class HandManager
 {
     private List<Card> Hand; 
 
-    void Start(){
-        Hand = new List<Card>();
+    public HandManager() {
+    Hand = new List<Card>();
     }
 
     public void AddCard(Card card){

@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DeckManager : MonoBehaviour
+public class DeckManager
 {
     private List<Card> FullDeck;      // Permanent deck with all cards
     private List<Card> CurrentDeck;   // Deck for the current hand/blind
     private System.Random rng = new System.Random(); // For shuffling
 
-    void Start()
+    public DeckManager()
     {
         BuildStandardDeck();
         RefillDeck();

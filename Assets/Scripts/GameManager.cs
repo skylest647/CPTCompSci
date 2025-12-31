@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-//Used Chat Gpt to learn enum
 public enum GamePhase
 {
     SmallBlind,
@@ -15,13 +14,11 @@ public class GameManager : MonoBehaviour
     private int Ante;
     private bool IsGameOver;
 
-    // private DeckManager DeckManager;
-    // private HandManager HandManager;
-    // private JokerManager JokerManager ;
-    // private ScoreManager ScoreManager;
-    // private BlindManager BlindManager;
-    // private EconomyManager EconomyManager;
-    // private EventManager EventManager;
+    private DeckManager DeckManager;
+    private HandManager HandManager;
+    private JokerManager JokerManager ;
+    private ScoreManager ScoreManager;
+    private EconomyManager EconomyManager;
 
 
     public void begin()
@@ -33,32 +30,42 @@ public class GameManager : MonoBehaviour
 
     private void InitializeManagers()
     {
-        // EventManager = new EventManager();
-
-        // DeckManager = new DeckManager();
-        // HandManager = new HandManager();
-        // ScoreManager = new ScoreManager();
-        // BlindManager = new BlindManager();
-        // EconomyManager = new EconomyManager();
-        // JokerManager = new JokerManager(EventManager);
-
-
-        // JokerManager.SetGame(this);
-        // BlindManager.SetGame(this);
+        DeckManager = new DeckManager();
+        HandManager = new HandManager();
+        EconomyManager = new EconomyManager();
+        JokerManager = new JokerManager();
+        ScoreManager = new ScoreManager(JokerManager);
     }
 
     public void StartNewRun()
     {
-        // Ante = 1;
-        // Phase = GamePhase.SmallBlind;
-        // IsGameOver = false;
+        Ante = 1;
+        Phase = GamePhase.SmallBlind;
+        IsGameOver = false;
 
-        // EconomyManager.SetMoney(10);
+        EconomyManager.SetMoney(10);
 
-        // DeckManager.BuildStandardDeck();
-        // DeckManager.Shuffle();
+        DeckManager.BuildStandardDeck();
+        DeckManager.Shuffle();
+    }
 
-        // BlindManager.StartBlind(Phase, Ante);
-        // EventManager.RaiseRunStarted();
+    private void StartPhase(GamePhase phase)
+    {
+        switch (phase)
+        {
+            case GamePhase.SmallBlind:
+            case GamePhase.BigBlind:
+            case GamePhase.BossBlind:
+                PlayBlind(phase);
+                break;
+                
+            case GamePhase.Shop:
+                OpenShop();
+                break;
+
+            case GamePhase.GameOver:
+                GameOver();
+                break;
+        }
     }
 }
