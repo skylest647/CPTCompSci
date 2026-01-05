@@ -5,7 +5,7 @@ public class HandManager
     private List<Card> Hand; 
 
     public HandManager() {
-    Hand = new List<Card>();
+        Hand = new List<Card>();
     }
 
     public void AddCard(Card card){
@@ -34,6 +34,7 @@ public class HandManager
     public bool ContainsCard(Card card){
         return Hand.Contains(card);
     }
+    
     private int GetValueRank(string value){
         string[] order = { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
         for (int i = 0; i < order.Length; i++)
