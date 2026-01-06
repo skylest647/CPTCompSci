@@ -17,7 +17,7 @@ public class GameManager : MonoBehaviour
     private int HandsRemaining;
     private int FinalScore;
     private int hands = 4;
-    private List<Card> SelectedCards;
+    private List<Card> PlayedHand;
 
     private DeckManager DeckManager;
     private HandManager HandManager;
@@ -46,15 +46,18 @@ public class GameManager : MonoBehaviour
     {
         Ante = 1;
         Phase = GamePhase.SmallBlind;
+        SetBlindTarget();
         IsGameOver = false;
         InShop = false;
         HandSize = 7;
         HandsRemaining = hands;
+        PlayedHand = new List<Card>();
 
         EconomyManager.SetMoney(10);
 
         DeckManager.BuildStandardDeck();
         DeckManager.Shuffle();
+        DrawHand();
     }
     public void DrawHand()
     {
@@ -77,34 +80,41 @@ public class GameManager : MonoBehaviour
         }
     }
     //selectedCardIndicies will be from a user input I will somehow figure out
+    
     public void PlayHand(List<int> selectedCardIndices)
     {
-        
-        DrawHand();
         
         if (HandManager.CardsInHand() == 0){
             IsGameOver = true;
             return;
         }
         var hand = HandManager.GetHand();
+
         foreach (int index in selectedCardIndices){
             if (index >= 0 && index < hand.Count)
             {
                 PlayedHand.Add(hand[index]);
             }
         }
+        
+        
         HandEvaluator evaluator = new HandEvaluator();
-        HandResult result = evaluator.Evaluate(hand);
+        HandResult result = evaluator.Evaluate(PlayedHand);
 
-        int Score = ScoreManager.CalculateFinalScore(result, hand);
+        int Score = ScoreManager.CalculateFinalScore(result, PlayedHand);
 
         FinalScore += Score;
+        PlayedHand.Clear();
         HandsRemaining--;
 
         if (HandsRemaining < 1)
-        {
-            EvaluateBlind();
-        }
+            {
+                EvaluateBlind();
+            }
+        if (!IsGameOver)
+            {
+                DrawHand();
+            }
     }
     public void SetBlindTarget()
     {
@@ -142,5 +152,17 @@ public class GameManager : MonoBehaviour
         SetBlindTarget();
 
     }
-
+    public void Update()
+    {
+        if (IsGameOver)
+        {
+            return;
+        }
+    }
+    public void PauseGame()
+    {
+        return;
+        //Pause menu functionality here
+    }
+    
 }

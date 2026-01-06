@@ -68,7 +68,7 @@ public class HandManager
                 }
             }
         }
-    }
+        }
     private bool ShouldSwap(Card a, Card b){
         int valueA = GetValueRank(GetCardValue(a));
         int valueB = GetValueRank(GetCardValue(b));

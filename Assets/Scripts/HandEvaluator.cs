@@ -28,13 +28,13 @@ public class HandEvaluator
             return new HandResult(HandType.StraightFlush, 9);
 
         if (IsFourOfAKind(valueCounts))
-            return new HandResult(HandType.FourOfAKind, 7);
+            return new HandResult(HandType.FourOfAKind, 8);
 
         if (IsFullHouse(valueCounts))
-            return new HandResult(HandType.FullHouse, 6);
+            return new HandResult(HandType.FullHouse, 7);
 
         if (IsFlush(hand))
-            return new HandResult(HandType.Flush, 5);
+            return new HandResult(HandType.Flush, 6);
 
         if (IsStraight(hand))
             return new HandResult(HandType.Straight, 5);

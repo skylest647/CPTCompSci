@@ -38,3 +38,37 @@ public class Joker
         return 0f;
     }
 }
+
+// using System.Collections.Generic;
+// using UnityEngine;
+
+// public class TEMPLATE_JokerName : Joker
+// {
+//     public TEMPLATE_JokerName()
+//     {
+//         Name = "Joker Name Here";
+//         Description = "Describe what this Joker does";
+//         EffectType = JokerEffectType.Chips; 
+//         // or JokerEffectType.Multiplier
+//     }
+
+//     // Only override this if EffectType == Chips
+//     public override int GetBonusChips(HandResult handResult, List<Card> hand)
+//     {
+//         // Example condition
+//         // if (handResult.Type == HandType.Pair)
+//         //     return 15;
+
+//         return 0;
+//     }
+
+//     // Only override this if EffectType == Multiplier
+//     public override float GetBonusMultiplier(HandResult handResult, List<Card> hand)
+//     {
+//         // Example condition
+//         // if (handResult.Type == HandType.Flush)
+//         //     return 2f;
+
+//         return 0f;
+//     }
+// }
