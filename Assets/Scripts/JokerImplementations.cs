@@ -315,7 +315,6 @@ public class RaisedFist : Joker
 
     public override float GetBonusMultiplier(HandResult handResult, List<Card> hand)
     {
-        // For simplicity, always give +25 (you'd need to track deck state for real implementation)
         return 25f;
     }
 }
