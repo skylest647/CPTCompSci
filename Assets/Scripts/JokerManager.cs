@@ -38,4 +38,14 @@ public class JokerManager
 
         return total;
     }
+
+    public List<Joker> GetActiveJokers()
+    {
+        return new List<Joker>(ActiveJokers);
+    }
+
+    public void LoadJokers(List<Joker> jokers)
+    {
+        ActiveJokers = new List<Joker>(jokers);
+    }
 }

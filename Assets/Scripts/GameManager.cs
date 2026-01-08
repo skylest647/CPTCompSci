@@ -29,7 +29,6 @@ public class GameManager : MonoBehaviour
     public void Start()
     {
         InitializeManagers();
-        StartNewRun();
     }
 
 
@@ -57,7 +56,12 @@ public class GameManager : MonoBehaviour
 
         DeckManager.BuildStandardDeck();
         DeckManager.Shuffle();
+        
+        JokerManager = new JokerManager();
+        ScoreManager = new ScoreManager(JokerManager);
+        
         DrawHand();
+        SaveGame();
     }
     public void DrawHand()
     {
@@ -115,6 +119,8 @@ public class GameManager : MonoBehaviour
             {
                 DrawHand();
             }
+        
+        SaveGame();
     }
     public void SetBlindTarget()
     {
@@ -165,4 +171,65 @@ public class GameManager : MonoBehaviour
         //Pause menu functionality here
     }
     
+    public int GetAnte() { return Ante; }
+    public GamePhase GetPhase() { return Phase; }
+    public int GetMoney() { return EconomyManager.GetMoney(); }
+    public int GetHandSize() { return HandSize; }
+    public int GetHandsRemaining() { return HandsRemaining; }
+    public int GetFinalScore() { return FinalScore; }
+    public int GetBlindGoal() { return BlindGoal; }
+
+    public List<Card> GetFullDeck()
+    {
+        return DeckManager.GetFullDeck();
+    }
+
+    public List<Card> GetCurrentDeck()
+    {
+        return DeckManager.GetCurrentDeck();
+    }
+
+    public List<Joker> GetActiveJokers()
+    {
+        return JokerManager.GetActiveJokers();
+    }
+
+    public void LoadGameState(int ante, GamePhase phase, int money, int handSize, int handsRemaining, int finalScore, int blindGoal)
+    {
+        Ante = ante;
+        Phase = phase;
+        HandSize = handSize;
+        HandsRemaining = handsRemaining;
+        FinalScore = finalScore;
+        BlindGoal = blindGoal;
+        IsGameOver = false;
+        InShop = false;
+
+        EconomyManager.SetMoney(money);
+    }
+
+    public void LoadDeck(List<Card> fullDeck, List<Card> currentDeck)
+    {
+        DeckManager.LoadDecks(fullDeck, currentDeck);
+    }
+
+    public void LoadJokers(List<Joker> jokers)
+    {
+        JokerManager.LoadJokers(jokers);
+        ScoreManager = new ScoreManager(JokerManager);
+    }
+
+    public void SaveGame()
+    {
+        SaveSystem.SaveGame(this);
+    }
+
+    public void LoadGame()
+    {
+        bool success = SaveSystem.LoadGame(this);
+        if (success)
+        {
+            DrawHand();
+        }
+    }
 }

@@ -75,4 +75,20 @@ public class DeckManager
     {
         return CurrentDeck.Count;
     }
+
+    public List<Card> GetFullDeck()
+    {
+        return new List<Card>(FullDeck);
+    }
+
+    public List<Card> GetCurrentDeck()
+    {
+        return new List<Card>(CurrentDeck);
+    }
+
+    public void LoadDecks(List<Card> fullDeck, List<Card> currentDeck)
+    {
+        FullDeck = new List<Card>(fullDeck);
+        CurrentDeck = new List<Card>(currentDeck);
+    }
 }
