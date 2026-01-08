@@ -1,6 +1,54 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using System.Collections.Generic;
+
+public class AllJokers
+{
+    private List<Joker> jokers;
+
+    public AllJokers()
+    {
+        jokers = new List<Joker>
+        {
+            new JokerJoker(),
+
+            // Suit-based jokers
+            new GreedyJoker(),
+            new LustyJoker(),
+            new WrathfulJoker(),
+            new GluttonousJoker(),
+
+            // Hand multiplier jokers
+            new JollyJoker(),
+            new ZanyJoker(),
+            new MadJoker(),
+            new CrazyJoker(),
+            new DevotedJoker(),
+
+            // Hand chip jokers
+            new SlyJoker(),
+            new WilyJoker(),
+            new CleverJoker(),
+            new DeviousJoker(),
+            new CraftyJoker(),
+
+            // Special condition jokers
+            new HalfJoker(),
+            new StuntmanJoker(),
+            new RaisedFist(),
+            new ScaredFace(),
+            new AbstractJoker()
+        };
+    }
+
+    public Joker GetRandomJoker()
+    {
+        int index = UnityEngine.Random.Range(0, jokers.Count);
+        Joker template = jokers[index];
+        return System.Activator.CreateInstance(template.GetType()) as Joker;
+    }
+}
 public class JokerJoker : Joker
 {
     public JokerJoker()

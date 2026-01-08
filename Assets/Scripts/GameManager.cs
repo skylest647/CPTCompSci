@@ -6,6 +6,7 @@ public enum GamePhase
     BigBlind,
     BossBlind
 }
+// ANSON CHANGE THE COST THING FOR THE JOKERS IMPLEMENTATION
 public class GameManager : MonoBehaviour
 {
     private GamePhase Phase;
@@ -18,7 +19,14 @@ public class GameManager : MonoBehaviour
     private int FinalScore;
     private int hands = 4;
     private List<Card> PlayedHand;
-
+    private List<int> selectedIndices = new List<int>();
+    private Joker shopJoker1;
+    private Joker shopJoker2;
+    private Card shopCard;
+    private int cardCost = 3;
+    private bool Joker1Bought;
+    private bool Joker2Bought;
+    private bool CardBought;
     private DeckManager DeckManager;
     private HandManager HandManager;
     private JokerManager JokerManager ;
@@ -39,6 +47,7 @@ public class GameManager : MonoBehaviour
         EconomyManager = new EconomyManager();
         JokerManager = new JokerManager();
         ScoreManager = new ScoreManager(JokerManager);
+        allJokers = new AllJokers();
     }
 
     public void StartNewRun()
@@ -83,7 +92,6 @@ public class GameManager : MonoBehaviour
             HandManager.SortHand();
         }
     }
-    //selectedCardIndicies will be from a user input I will somehow figure out
     
     public void PlayHand(List<int> selectedCardIndices)
     {
@@ -92,6 +100,7 @@ public class GameManager : MonoBehaviour
             IsGameOver = true;
             return;
         }
+        PlayedHand.Clear();
         var hand = HandManager.GetHand();
 
         foreach (int index in selectedCardIndices){
@@ -139,6 +148,7 @@ public class GameManager : MonoBehaviour
             HandsRemaining = hands;
             DeckManager.RefillDeck();
             AdvanceBlind();
+            EnterShop();
         }
         else
         {
@@ -158,13 +168,127 @@ public class GameManager : MonoBehaviour
         SetBlindTarget();
 
     }
+    private void EnterShop()
+    {
+        InShop = true;
+
+        joker1Bought = false;
+        joker2Bought = false;
+        cardBought = false;
+
+        shopJoker1 = allJokers.GetRandomJoker();
+        shopJoker2 = allJokers.GetRandomJoker();
+
+        shopCard = GenerateRandomCard();
+    }
+    private void ExitShop()
+    {
+        InShop = false;
+        DrawHand();
+    }
+    private void HandleShopInput()
+    {
+        if (Input.GetKeyDown(KeyCode.B))
+        {
+            TryBuyJoker();
+        }
+
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            ExitShop();
+        }
+    }
+
+    private void ToggleSelection(int index){
+        if (selectedIndices.Contains(index))
+            selectedIndices.Remove(index);
+        else
+            selectedIndices.Add(index);
+    }
     public void Update()
     {
         if (IsGameOver)
         {
             return;
         }
+        if (InShop)
+        {
+            HandleShopInput();
+            return;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha1)) ToggleSelection(0);
+        if (Input.GetKeyDown(KeyCode.Alpha2)) ToggleSelection(1);
+        if (Input.GetKeyDown(KeyCode.Alpha3)) ToggleSelection(2);
+        if (Input.GetKeyDown(KeyCode.Alpha4)) ToggleSelection(3);
+        if (Input.GetKeyDown(KeyCode.Alpha5)) ToggleSelection(4);
+        if (Input.GetKeyDown(KeyCode.Alpha6)) ToggleSelection(5);
+        if (Input.GetKeyDown(KeyCode.Alpha7)) ToggleSelection(6);
+        if (Input.GetKeyDown(KeyCode.Space)){
+            if (PlayedHand.Count > 0)
+            {
+                PlayHand(PlayedHand);
+                PlayedHand.Clear();
+            }
+        }
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            PauseGame();
+        }
+
     }
+    private void HandleShopInput(){
+    if (Input.GetKeyDown(KeyCode.Z))
+        BuyJoker1();
+
+    if (Input.GetKeyDown(KeyCode.X))
+        BuyJoker2();
+
+    if (Input.GetKeyDown(KeyCode.C))
+        BuyCard();
+
+    if (Input.GetKeyDown(KeyCode.Q))
+        ExitShop();
+    
+    }
+    private void BuyJoker1(){
+        if (joker1Bought) return;
+        if (EconomyManager.SpendMoney(jokerCost))
+        {
+            JokerManager.AddJoker(shopJoker1);
+            joker1Bought = true;
+        }
+    }
+    private void BuyJoker2(){
+        if (joker2Bought) return;
+
+        if (EconomyManager.SpendMoney(jokerCost))
+        {
+            JokerManager.AddJoker(shopJoker2);
+            joker2Bought = true;
+        }
+    }
+    private void BuyCard(){
+        if (cardBought) return;
+
+        if (EconomyManager.SpendMoney(cardCost))
+        {
+            Card randomCard = GenerateRandomCard();
+            DeckManager.AddCard(randomCard, true);
+
+            cardBought = true;
+        }
+    }
+    private Card GenerateRandomCard(){
+        string[] suits = { "Hearts", "Diamonds", "Clubs", "Spades" };
+        string[] values = { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
+
+        string suit = suits[Random.Range(0, suits.Length)];
+        string value = values[Random.Range(0, values.Length)];
+
+        return new Card(value, suit);
+    }
+    
     public void PauseGame()
     {
         return;
@@ -232,4 +356,6 @@ public class GameManager : MonoBehaviour
             DrawHand();
         }
     }
+
+    
 }
