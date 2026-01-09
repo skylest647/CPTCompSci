@@ -12,7 +12,12 @@ public class Joker
     protected string Name;
     protected string Description;
     protected JokerEffectType EffectType;
+    protected int cost;
 
+    public string getCost()
+    {
+        return cost;
+    }
     public string GetName()
     {
         return Name;

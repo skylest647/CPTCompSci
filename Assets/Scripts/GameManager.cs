@@ -1,12 +1,13 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Xml.Serialization;
 public enum GamePhase
 {
     SmallBlind,
     BigBlind,
     BossBlind
 }
-// ANSON CHANGE THE COST THING FOR THE JOKERS IMPLEMENTATION
+
 public class GameManager : MonoBehaviour
 {
     private GamePhase Phase;
@@ -186,18 +187,6 @@ public class GameManager : MonoBehaviour
         InShop = false;
         DrawHand();
     }
-    private void HandleShopInput()
-    {
-        if (Input.GetKeyDown(KeyCode.B))
-        {
-            TryBuyJoker();
-        }
-
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            ExitShop();
-        }
-    }
 
     private void ToggleSelection(int index){
         if (selectedIndices.Contains(index))
@@ -253,16 +242,16 @@ public class GameManager : MonoBehaviour
     }
     private void BuyJoker1(){
         if (joker1Bought) return;
-        if (EconomyManager.SpendMoney(jokerCost))
+        if (EconomyManager.SpendMoney(10))
         {
-            JokerManager.AddJoker(shopJoker1);
+            JokerManager.AddJoker(shopJoker1.getCost);
             joker1Bought = true;
         }
     }
     private void BuyJoker2(){
         if (joker2Bought) return;
 
-        if (EconomyManager.SpendMoney(jokerCost))
+        if (EconomyManager.SpendMoney(shopJoker2.getCost))
         {
             JokerManager.AddJoker(shopJoker2);
             joker2Bought = true;
@@ -271,7 +260,7 @@ public class GameManager : MonoBehaviour
     private void BuyCard(){
         if (cardBought) return;
 
-        if (EconomyManager.SpendMoney(cardCost))
+        if (EconomyManager.SpendMoney(5))
         {
             Card randomCard = GenerateRandomCard();
             DeckManager.AddCard(randomCard, true);

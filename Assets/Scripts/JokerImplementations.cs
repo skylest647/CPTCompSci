@@ -12,28 +12,23 @@ public class AllJokers
         jokers = new List<Joker>
         {
             new JokerJoker(),
-
-            // Suit-based jokers
             new GreedyJoker(),
             new LustyJoker(),
             new WrathfulJoker(),
             new GluttonousJoker(),
 
-            // Hand multiplier jokers
             new JollyJoker(),
             new ZanyJoker(),
             new MadJoker(),
             new CrazyJoker(),
             new DevotedJoker(),
 
-            // Hand chip jokers
             new SlyJoker(),
             new WilyJoker(),
             new CleverJoker(),
             new DeviousJoker(),
             new CraftyJoker(),
 
-            // Special condition jokers
             new HalfJoker(),
             new StuntmanJoker(),
             new RaisedFist(),
