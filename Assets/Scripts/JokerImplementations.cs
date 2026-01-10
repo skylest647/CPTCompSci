@@ -1,8 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-using System.Collections.Generic;
-
 public class AllJokers
 {
     private List<Joker> jokers;

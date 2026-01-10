@@ -1,6 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System.Xml.Serialization;
+
 public enum GamePhase
 {
     SmallBlind,
@@ -25,21 +25,20 @@ public class GameManager : MonoBehaviour
     private Joker shopJoker2;
     private Card shopCard;
     private int cardCost = 3;
-    private bool Joker1Bought;
-    private bool Joker2Bought;
-    private bool CardBought;
+    private bool joker1Bought;
+    private bool joker2Bought;
+    private bool cardBought;
     private DeckManager DeckManager;
     private HandManager HandManager;
-    private JokerManager JokerManager ;
+    private JokerManager JokerManager;
     private ScoreManager ScoreManager;
     private EconomyManager EconomyManager;
-
+    private AllJokers allJokers;
 
     public void Start()
     {
         InitializeManagers();
     }
-
 
     private void InitializeManagers()
     {
@@ -73,6 +72,7 @@ public class GameManager : MonoBehaviour
         DrawHand();
         SaveGame();
     }
+
     public void DrawHand()
     {
         HandManager.ClearHand();
@@ -96,22 +96,22 @@ public class GameManager : MonoBehaviour
     
     public void PlayHand(List<int> selectedCardIndices)
     {
-        
-        if (HandManager.CardsInHand() == 0){
+        if (HandManager.CardsInHand() == 0)
+        {
             IsGameOver = true;
             return;
         }
         PlayedHand.Clear();
         var hand = HandManager.GetHand();
 
-        foreach (int index in selectedCardIndices){
+        foreach (int index in selectedCardIndices)
+        {
             if (index >= 0 && index < hand.Count)
             {
                 PlayedHand.Add(hand[index]);
             }
         }
-        
-        
+
         HandEvaluator evaluator = new HandEvaluator();
         HandResult result = evaluator.Evaluate(PlayedHand);
 
@@ -122,16 +122,17 @@ public class GameManager : MonoBehaviour
         HandsRemaining--;
 
         if (HandsRemaining < 1)
-            {
-                EvaluateBlind();
-            }
+        {
+            EvaluateBlind();
+        }
         if (!IsGameOver)
-            {
-                DrawHand();
-            }
+        {
+            DrawHand();
+        }
         
         SaveGame();
     }
+
     public void SetBlindTarget()
     {
         switch (Phase)
@@ -141,6 +142,7 @@ public class GameManager : MonoBehaviour
             case GamePhase.BossBlind: BlindGoal = 50 * Ante; break;
         }
     }
+
     private void EvaluateBlind()
     {
         if (FinalScore >= BlindGoal)
@@ -156,19 +158,21 @@ public class GameManager : MonoBehaviour
             IsGameOver = true;
         }
     }
-    private void AdvanceBlind(){
-        switch (Phase)
-            {
-                case GamePhase.SmallBlind: Phase = GamePhase.BigBlind; break;
-                case GamePhase.BigBlind: Phase = GamePhase.BossBlind; break;
-                case GamePhase.BossBlind:
-                    Phase = GamePhase.SmallBlind; 
-                    Ante++;
-                    break;
-            }
-        SetBlindTarget();
 
+    private void AdvanceBlind()
+    {
+        switch (Phase)
+        {
+            case GamePhase.SmallBlind: Phase = GamePhase.BigBlind; break;
+            case GamePhase.BigBlind: Phase = GamePhase.BossBlind; break;
+            case GamePhase.BossBlind:
+                Phase = GamePhase.SmallBlind; 
+                Ante++;
+                break;
+        }
+        SetBlindTarget();
     }
+
     private void EnterShop()
     {
         InShop = true;
@@ -182,18 +186,21 @@ public class GameManager : MonoBehaviour
 
         shopCard = GenerateRandomCard();
     }
+
     private void ExitShop()
     {
         InShop = false;
         DrawHand();
     }
 
-    private void ToggleSelection(int index){
+    private void ToggleSelection(int index)
+    {
         if (selectedIndices.Contains(index))
             selectedIndices.Remove(index);
         else
             selectedIndices.Add(index);
     }
+
     public void Update()
     {
         if (IsGameOver)
@@ -213,62 +220,65 @@ public class GameManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Alpha5)) ToggleSelection(4);
         if (Input.GetKeyDown(KeyCode.Alpha6)) ToggleSelection(5);
         if (Input.GetKeyDown(KeyCode.Alpha7)) ToggleSelection(6);
-        if (Input.GetKeyDown(KeyCode.Space)){
-            if (PlayedHand.Count > 0)
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            if (selectedIndices.Count > 0)
             {
-                PlayHand(PlayedHand);
-                PlayedHand.Clear();
+                PlayHand(selectedIndices);
+                selectedIndices.Clear();
             }
         }
-        if (Input.GetKeyDown(KeyCode.P))
-        {
-            PauseGame();
-        }
-
     }
-    private void HandleShopInput(){
-    if (Input.GetKeyDown(KeyCode.Z))
-        BuyJoker1();
 
-    if (Input.GetKeyDown(KeyCode.X))
-        BuyJoker2();
+    private void HandleShopInput()
+    {
+        if (Input.GetKeyDown(KeyCode.Z))
+            BuyJoker1();
 
-    if (Input.GetKeyDown(KeyCode.C))
-        BuyCard();
+        if (Input.GetKeyDown(KeyCode.X))
+            BuyJoker2();
 
-    if (Input.GetKeyDown(KeyCode.Q))
-        ExitShop();
-    
+        if (Input.GetKeyDown(KeyCode.C))
+            BuyCard();
+
+        if (Input.GetKeyDown(KeyCode.Q))
+            ExitShop();
     }
-    private void BuyJoker1(){
+
+    private void BuyJoker1()
+    {
         if (joker1Bought) return;
         if (EconomyManager.SpendMoney(10))
         {
-            JokerManager.AddJoker(shopJoker1.getCost);
+            JokerManager.AddJoker(shopJoker1);
             joker1Bought = true;
         }
     }
-    private void BuyJoker2(){
+
+    private void BuyJoker2()
+    {
         if (joker2Bought) return;
 
-        if (EconomyManager.SpendMoney(shopJoker2.getCost))
+        if (EconomyManager.SpendMoney(10))
         {
             JokerManager.AddJoker(shopJoker2);
             joker2Bought = true;
         }
     }
-    private void BuyCard(){
+
+    private void BuyCard()
+    {
         if (cardBought) return;
 
         if (EconomyManager.SpendMoney(5))
         {
-            Card randomCard = GenerateRandomCard();
-            DeckManager.AddCard(randomCard, true);
-
+            DeckManager.AddCard(shopCard, true);
             cardBought = true;
         }
     }
-    private Card GenerateRandomCard(){
+
+    private Card GenerateRandomCard()
+    {
         string[] suits = { "Hearts", "Diamonds", "Clubs", "Spades" };
         string[] values = { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
 
@@ -278,12 +288,7 @@ public class GameManager : MonoBehaviour
         return new Card(value, suit);
     }
     
-    public void PauseGame()
-    {
-        return;
-        //Pause menu functionality here
-    }
-    
+
     public int GetAnte() { return Ante; }
     public GamePhase GetPhase() { return Phase; }
     public int GetMoney() { return EconomyManager.GetMoney(); }
@@ -345,6 +350,4 @@ public class GameManager : MonoBehaviour
             DrawHand();
         }
     }
-
-    
 }

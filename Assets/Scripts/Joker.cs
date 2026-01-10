@@ -6,18 +6,19 @@ public enum JokerEffectType
     Chips,
     Multiplier
 }
+
 public class Joker
 {
-    //protected so that inherited classes can work :p
     protected string Name;
     protected string Description;
     protected JokerEffectType EffectType;
-    protected int cost;
+    protected int cost = 10;
 
-    public string getCost()
+    public int GetCost()
     {
         return cost;
     }
+
     public string GetName()
     {
         return Name;
@@ -43,7 +44,6 @@ public class Joker
         return 0f;
     }
 }
-
 // using System.Collections.Generic;
 // using UnityEngine;
 
