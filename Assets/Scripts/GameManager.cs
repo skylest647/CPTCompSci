@@ -34,6 +34,12 @@ public class GameManager : MonoBehaviour
     private ScoreManager ScoreManager;
     private EconomyManager EconomyManager;
     private AllJokers allJokers;
+    public GameObject shopPanel;
+    public UnityEngine.UI.Text joker1Name;
+    public UnityEngine.UI.Text joker2Name;
+    public UnityEngine.UI.Image cardImage;
+    public UnityEngine.UI.Text joker2Desc;
+    public UnityEngine.UI.Text joker1Desc;
 
     public void Start()
     {
@@ -184,7 +190,22 @@ public class GameManager : MonoBehaviour
         shopJoker1 = allJokers.GetRandomJoker();
         shopJoker2 = allJokers.GetRandomJoker();
 
+        joker1Name.text = shopJoker1.GetName();
+        joker2Name.text = shopJoker2.GetName();
+        
+        joker1Desc.text = shopJoker1.GetDescription();
+        joker2Desc.text = shopJoker2.GetDescription();
+
         shopCard = GenerateRandomCard();
+        cardImage.sprite = GetCardSprite(shopCard);
+        
+    }
+
+    private Sprite GetCardSprite(Card card)
+    {
+        // Path example "Cards/Hearts_A"
+        string path = $"Cards/{card.GetSuit()}_{card.GetValue()}";
+        return Resources.Load<Sprite>(path);
     }
 
     private void ExitShop()
@@ -210,7 +231,12 @@ public class GameManager : MonoBehaviour
         if (InShop)
         {
             HandleShopInput();
+            shopPanel.SetActive(true);
             return;
+        }
+        else
+        {
+            shopPanel.SetActive(false);
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha1)) ToggleSelection(0);
@@ -270,7 +296,7 @@ public class GameManager : MonoBehaviour
     {
         if (cardBought) return;
 
-        if (EconomyManager.SpendMoney(5))
+        if (EconomyManager.SpendMoney(cardCost))
         {
             DeckManager.AddCard(shopCard, true);
             cardBought = true;
@@ -289,13 +315,43 @@ public class GameManager : MonoBehaviour
     }
     
 
-    public int GetAnte() { return Ante; }
-    public GamePhase GetPhase() { return Phase; }
-    public int GetMoney() { return EconomyManager.GetMoney(); }
-    public int GetHandSize() { return HandSize; }
-    public int GetHandsRemaining() { return HandsRemaining; }
-    public int GetFinalScore() { return FinalScore; }
-    public int GetBlindGoal() { return BlindGoal; }
+    public int GetAnte() { 
+        return Ante; 
+        }
+    public GamePhase GetPhase() { 
+        return Phase; 
+        }
+    public int GetMoney() { 
+        return EconomyManager.GetMoney();
+        }
+    public int GetHandSize() { 
+        return HandSize; 
+        }
+    public int GetHandsRemaining() { 
+        return HandsRemaining; 
+        }
+    public int GetFinalScore() {
+        return FinalScore; 
+        }
+    public int GetBlindGoal() {
+        return BlindGoal; 
+        }
+    public bool IsInShop()
+    {
+        return InShop;
+    }
+    public Joker GetShopJoker1()
+    {
+        return shopJoker1;
+    }
+    public Joker GetShopJoker2()
+    {
+        return shopJoker2;
+    }
+    public Card GetShopCard()
+    {
+        return shopCard;
+    }
 
     public List<Card> GetFullDeck()
     {

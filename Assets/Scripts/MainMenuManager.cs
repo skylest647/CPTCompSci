@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneNames;
+//using UnityEngine.SceneNames;
 
 public class MainMenuManager : MonoBehaviour
 {

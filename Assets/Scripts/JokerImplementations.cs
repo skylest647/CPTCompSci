@@ -39,6 +39,7 @@ public class AllJokers
     {
         int index = UnityEngine.Random.Range(0, jokers.Count);
         Joker template = jokers[index];
+        //chatgpt helped with this one line
         return System.Activator.CreateInstance(template.GetType()) as Joker;
     }
 }
