@@ -13,6 +13,7 @@ public class GameManager : MonoBehaviour
     private GamePhase Phase;
     private int Ante;
     private bool IsGameOver;
+    private bool IsInGame;
     private bool InShop;
     private int HandSize;
     private int BlindGoal;
@@ -35,11 +36,22 @@ public class GameManager : MonoBehaviour
     private EconomyManager EconomyManager;
     private AllJokers allJokers;
     public GameObject shopPanel;
+    public GameObject MainUI;
     public UnityEngine.UI.Text joker1Name;
     public UnityEngine.UI.Text joker2Name;
     public UnityEngine.UI.Image cardImage;
     public UnityEngine.UI.Text joker2Desc;
     public UnityEngine.UI.Text joker1Desc;
+    public UnityEngine.UI.Text joker1Cost;
+    public UnityEngine.UI.Text joker2Cost;
+    public UnityEngine.UI.Text cardCostText;
+    public UnityEngine.UI.Text moneyText;
+    public UnityEngine.UI.Text anteText;
+    public UnityEngine.UI.Text phaseText;
+    public UnityEngine.UI.Text handSizeText;
+    public UnityEngine.UI.Text handsRemainingText;
+    public UnityEngine.UI.Text blindGoalText;
+    public UnityEngine.UI.Text finalScoreText;
 
     public void Start()
     {
@@ -74,7 +86,7 @@ public class GameManager : MonoBehaviour
         
         JokerManager = new JokerManager();
         ScoreManager = new ScoreManager(JokerManager);
-        
+        IsInGame = true;
         DrawHand();
         SaveGame();
     }
@@ -175,6 +187,7 @@ public class GameManager : MonoBehaviour
                 Phase = GamePhase.SmallBlind; 
                 Ante++;
                 break;
+
         }
         SetBlindTarget();
     }
@@ -189,12 +202,16 @@ public class GameManager : MonoBehaviour
 
         shopJoker1 = allJokers.GetRandomJoker();
         shopJoker2 = allJokers.GetRandomJoker();
-
+        
         joker1Name.text = shopJoker1.GetName();
         joker2Name.text = shopJoker2.GetName();
         
         joker1Desc.text = shopJoker1.GetDescription();
         joker2Desc.text = shopJoker2.GetDescription();
+
+        joker1Cost.text = shopJoker1.GetCost().ToString();
+        joker2Cost.text = shopJoker2.GetCost().ToString();
+        cardCostText.text = cardCost.ToString();
 
         shopCard = GenerateRandomCard();
         cardImage.sprite = GetCardSprite(shopCard);
@@ -226,7 +243,17 @@ public class GameManager : MonoBehaviour
     {
         if (IsGameOver)
         {
+            IsInGame = false;
             return;
+        }
+        if (IsInGame)
+        {
+            MainUI.SetActive(true);
+            UpdateMainUI();
+        }
+        else
+        {
+            MainUI.SetActive(false);
         }
         if (InShop)
         {
@@ -255,6 +282,16 @@ public class GameManager : MonoBehaviour
             }
         }
     }
+    private void UpdateMainUI()
+    {
+        moneyText.text = $"Money: {EconomyManager.GetMoney()}";
+        anteText.text = $"Ante: {Ante}";
+        phaseText.text = $"Phase: {Phase}";
+        handSizeText.text = $"Hand Size: {HandSize}";
+        handsRemainingText.text = $"Hands Left: {HandsRemaining}";
+        blindGoalText.text = $"Blind Goal: {BlindGoal}";
+        finalScoreText.text = $"Score: {FinalScore}";
+    }
 
     private void HandleShopInput()
     {
@@ -278,7 +315,9 @@ public class GameManager : MonoBehaviour
         {
             JokerManager.AddJoker(shopJoker1);
             joker1Bought = true;
+            joker1Cost.text = "SOLD";
         }
+        
     }
 
     private void BuyJoker2()
@@ -289,7 +328,9 @@ public class GameManager : MonoBehaviour
         {
             JokerManager.AddJoker(shopJoker2);
             joker2Bought = true;
+            joker2Cost.text = "SOLD";
         }
+        
     }
 
     private void BuyCard()
@@ -300,6 +341,7 @@ public class GameManager : MonoBehaviour
         {
             DeckManager.AddCard(shopCard, true);
             cardBought = true;
+            cardCostText.text = "SOLD";
         }
     }
 
