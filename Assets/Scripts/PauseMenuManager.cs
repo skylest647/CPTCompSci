@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class PauseMenuManager : MonoBehaviour
 {
@@ -19,7 +20,7 @@ public class PauseMenuManager : MonoBehaviour
     
     [Header("Volume Controls")]
     [SerializeField] private Slider volumeSlider;
-    [SerializeField] private Text volumeText;
+    [SerializeField] private TextMeshProUGUI volumeText;
     
     private bool isPaused = false;
     private GameManager gameManager;
@@ -27,7 +28,7 @@ public class PauseMenuManager : MonoBehaviour
 
     private void Start()
     {
-        gameManager = FindObjectOfType<GameManager>();
+        gameManager = FindFirstObjectByType<GameManager>();
         
         SetupButtons();
         LoadVolumeSettings();
@@ -110,7 +111,7 @@ public class PauseMenuManager : MonoBehaviour
         // UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
         
         // Or if in same scene, just show main menu
-        MainMenuManager mainMenu = FindObjectOfType<MainMenuManager>();
+        MainMenuManager mainMenu = FindFirstObjectByType<MainMenuManager>();
         if (mainMenu != null)
         {
             pauseMenuPanel.SetActive(false);

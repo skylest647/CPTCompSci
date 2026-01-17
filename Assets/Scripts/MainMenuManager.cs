@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
-//using UnityEngine.SceneNames;
+using TMPro;
 
 public class MainMenuManager : MonoBehaviour
 {
@@ -20,7 +20,7 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private Slider volumeSlider;
     
     [Header("Volume Text")]
-    [SerializeField] private Text volumeText;
+    [SerializeField] private TextMeshProUGUI volumeText;
 
     private const string VOLUME_KEY = "Volume";
 
@@ -59,7 +59,7 @@ public class MainMenuManager : MonoBehaviour
         AudioListener.volume = value;
     }
 
-    private void UpdateVolumeText(Text text, float value)
+    private void UpdateVolumeText(TextMeshProUGUI text, float value)
     {
         text.text = Mathf.RoundToInt(value * 100) + "%";
     }
@@ -78,7 +78,7 @@ public class MainMenuManager : MonoBehaviour
 
     private void StartGame()
     {
-        GameManager gameManager = FindObjectOfType<GameManager>();
+        GameManager gameManager = FindFirstObjectByType<GameManager>();
         
         if (gameManager != null)
         {
