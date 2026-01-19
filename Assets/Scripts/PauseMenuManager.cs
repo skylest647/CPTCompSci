@@ -123,11 +123,13 @@ public class PauseMenuManager : MonoBehaviour
 
     private void QuitGame()
     {
-        Time.timeScale = 1f; // Reset time scale before quitting
+        Debug.Log("Quit button pressed!");
         
         #if UNITY_EDITOR
+            Debug.Log("Stopping play mode in editor...");
             UnityEditor.EditorApplication.isPlaying = false;
         #else
+            Debug.Log("Quitting application...");
             Application.Quit();
         #endif
     }

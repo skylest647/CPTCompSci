@@ -95,9 +95,13 @@ public class MainMenuManager : MonoBehaviour
 
     private void QuitGame()
     {
+        Debug.Log("Quit button pressed!");
+        
         #if UNITY_EDITOR
+            Debug.Log("Stopping play mode in editor...");
             UnityEditor.EditorApplication.isPlaying = false;
         #else
+            Debug.Log("Quitting application...");
             Application.Quit();
         #endif
     }
