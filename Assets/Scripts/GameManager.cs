@@ -52,6 +52,13 @@ public class GameManager : MonoBehaviour
     public UnityEngine.UI.Text handsRemainingText;
     public UnityEngine.UI.Text blindGoalText;
     public UnityEngine.UI.Text finalScoreText;
+    private float liftAmount = 30f;
+    public Transform handUIParent;        // Horizontal layout group
+    public GameObject cardUIPrefab;
+    public GameObject handUI;
+
+
+    private List<GameObject> cardUIObjects = new List<GameObject>();
 
     public void Start()
     {
@@ -88,6 +95,8 @@ public class GameManager : MonoBehaviour
         ScoreManager = new ScoreManager(JokerManager);
         IsInGame = true;
         DrawHand();
+        selectedIndices.Clear();
+        RefreshHandUI();
         SaveGame();
     }
 
@@ -97,6 +106,7 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < HandSize; i++)
         {
             Card card = DeckManager.Draw();
+            Debug.Log($"Card drawn → Suit: '{card.GetSuit()}', Value: '{card.GetValue()}'");
 
             if (card == null)
             {
@@ -146,6 +156,8 @@ public class GameManager : MonoBehaviour
         if (!IsGameOver)
         {
             DrawHand();
+            selectedIndices.Clear();
+            RefreshHandUI();
         }
         
         SaveGame();
@@ -169,6 +181,7 @@ public class GameManager : MonoBehaviour
             HandsRemaining = hands;
             DeckManager.RefillDeck();
             AdvanceBlind();
+            EconomyManager.AddMoney(10);
             EnterShop();
         }
         else
@@ -220,23 +233,44 @@ public class GameManager : MonoBehaviour
 
     private Sprite GetCardSprite(Card card)
     {
-        // Path example "Cards/Hearts_A"
         string path = $"Cards/{card.GetSuit()}_{card.GetValue()}";
-        return Resources.Load<Sprite>(path);
+        Sprite sprite = Resources.Load<Sprite>(path);
+
+        Debug.Log($"Trying to load: Assets/Resources/{path}");
+
+        if (sprite == null)
+            Debug.LogError($"❌ Sprite NOT found: {path}");
+        else
+            Debug.Log($"✅ Sprite loaded: {sprite.name}");
+
+        return sprite;
     }
 
     private void ExitShop()
     {
         InShop = false;
         DrawHand();
+        selectedIndices.Clear();
+        RefreshHandUI();
     }
 
     private void ToggleSelection(int index)
     {
+        if (index < 0 || index >= cardUIObjects.Count)
+            return;
+
+        RectTransform rt = cardUIObjects[index].GetComponent<RectTransform>();
+
         if (selectedIndices.Contains(index))
+        {
             selectedIndices.Remove(index);
+            rt.anchoredPosition = Vector2.zero; 
+        }
         else
+        {
             selectedIndices.Add(index);
+            rt.anchoredPosition = Vector2.up * liftAmount; 
+        }
     }
 
     public void Update()
@@ -257,12 +291,14 @@ public class GameManager : MonoBehaviour
         }
         if (InShop)
         {
+            handUI.SetActive(false);
             HandleShopInput();
             shopPanel.SetActive(true);
             return;
         }
         else
         {
+            handUI.SetActive(true);
             shopPanel.SetActive(false);
         }
 
@@ -279,6 +315,7 @@ public class GameManager : MonoBehaviour
             {
                 PlayHand(selectedIndices);
                 selectedIndices.Clear();
+                RefreshHandUI();
             }
         }
     }
@@ -291,6 +328,32 @@ public class GameManager : MonoBehaviour
         handsRemainingText.text = $"Hands Left: {HandsRemaining}";
         blindGoalText.text = $"Blind Goal: {BlindGoal}";
         finalScoreText.text = $"Score: {FinalScore}";
+    }
+    private void RefreshHandUI()
+    {
+        foreach (var obj in cardUIObjects)
+            Destroy(obj);
+
+        cardUIObjects.Clear();
+
+        var hand = HandManager.GetHand();
+        
+        for (int i = 0; i < hand.Count; i++)
+        {
+            Card card = hand[i];
+
+            GameObject uiCard = Instantiate(cardUIPrefab, handUIParent);
+            cardUIObjects.Add(uiCard);
+
+            CardUI cardUI = uiCard.GetComponent<CardUI>();
+            cardUI.cardImage.sprite = GetCardSprite(card);
+
+            var txt = uiCard.GetComponentInChildren<UnityEngine.UI.Text>();
+            if (txt != null)
+                txt.text = $"{card.GetSuit()}_{card.GetValue()}";
+
+            uiCard.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+        }
     }
 
     private void HandleShopInput()
@@ -311,7 +374,7 @@ public class GameManager : MonoBehaviour
     private void BuyJoker1()
     {
         if (joker1Bought) return;
-        if (EconomyManager.SpendMoney(10))
+        if (EconomyManager.SpendMoney(shopJoker1.GetCost()))
         {
             JokerManager.AddJoker(shopJoker1);
             joker1Bought = true;
@@ -324,7 +387,7 @@ public class GameManager : MonoBehaviour
     {
         if (joker2Bought) return;
 
-        if (EconomyManager.SpendMoney(10))
+        if (EconomyManager.SpendMoney(shopJoker2.GetCost()))
         {
             JokerManager.AddJoker(shopJoker2);
             joker2Bought = true;
@@ -353,7 +416,7 @@ public class GameManager : MonoBehaviour
         string suit = suits[Random.Range(0, suits.Length)];
         string value = values[Random.Range(0, values.Length)];
 
-        return new Card(value, suit);
+        return new Card(suit, value);
     }
     
 
@@ -446,6 +509,8 @@ public class GameManager : MonoBehaviour
         if (success)
         {
             DrawHand();
+            selectedIndices.Clear();
+            RefreshHandUI();
         }
     }
 }

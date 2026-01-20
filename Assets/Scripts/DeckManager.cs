@@ -25,7 +25,7 @@ public class DeckManager
         {
             foreach (var value in values)
             {
-                FullDeck.Add(new Card(value, suit));
+                FullDeck.Add(new Card(suit, value));
             }
         }
     }

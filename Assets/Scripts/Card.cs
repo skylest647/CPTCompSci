@@ -5,7 +5,7 @@ public class Card
     private string Value;
     private string Suit;
 
-    public Card(string value, string suit)
+    public Card(string suit, string value)
     {
         Value = value;
         Suit = suit;
