@@ -39,4 +39,16 @@ public class HandManager
             }
         }
     }
+    public int FindCardIndex(int value, CardSuit suit){
+        for (int i = 0; i < Hand.Count; i++)
+        {
+            Card card = Hand[i];
+
+            if (card.GetNumericValue() == value && card.GetSuit() == suit)
+            {
+                return i; 
+            }
+        }
+        return -1; 
+    }
 }
