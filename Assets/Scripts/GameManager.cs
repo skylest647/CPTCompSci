@@ -66,6 +66,10 @@ public class GameManager : MonoBehaviour
     public GameObject handUI;
     private List<GameObject> cardUIObjects = new List<GameObject>();
     private float liftAmount = 30f;
+    [Header("Menu Canvas References")]
+    public GameObject startMenuPanel; // The very first menu
+    public GameObject pauseMenuPanel; // The middle-of-game menu
+    public GameObject gameOverPanel;  // The end-of-game menu
 
     public void Start()
     {
@@ -85,14 +89,26 @@ public class GameManager : MonoBehaviour
         {
             if (pause.IsPaused() == true) { return; }
         }
-
         if (IsGameOver == true)
         {
             IsInGame = false;
             MainUI.SetActive(false);
-            return;
+            handUI.SetActive(false); // Hide the hand UI
+            shopPanel.SetActive(false); // Hide shop if it was open
+            
+            if (gameOverPanel != null) 
+            { 
+                gameOverPanel.SetActive(true); 
+            }
+            return; // Stop processing inputs like Alpha1 or Space
         }
-
+        else
+        {
+            if (gameOverPanel != null) 
+            { 
+                gameOverPanel.SetActive(false); 
+            }
+        }
         if (IsInGame == true)
         {
             MainUI.SetActive(true);
@@ -389,4 +405,42 @@ public class GameManager : MonoBehaviour
     public List<Joker> GetActiveJokers() { return JokerManager.GetActiveJokers(); }
     public void LoadDeck(List<Card> f, List<Card> c) { DeckManager.LoadDecks(f, c); }
     public void LoadJokers(List<Joker> j) { JokerManager.LoadJokers(j); ScoreManager = new ScoreManager(JokerManager); }
+        public void QuitGame()
+    {
+        Debug.Log("Game logic: Closing Application...");
+        Application.Quit();
+        // Note: This only works in a built .exe, not inside the Unity Editor.
+    }
+
+    public void ReturnToMainMenuFromGameOver()
+    {
+        Debug.Log("Returning to Main Menu");
+
+        // 1. Reset Internal States
+        IsGameOver = false;
+        IsInGame = false;
+        InShop = false;
+        Time.timeScale = 1f;
+
+        // 2. Clear visual cards so they don't stay on screen
+        foreach (GameObject cardUI in cardUIObjects)
+        {
+            if (cardUI != null) Destroy(cardUI);
+        }
+        cardUIObjects.Clear();
+
+        // 3. The "State Toggle"
+        // Hide everything else
+        if (gameOverPanel != null) gameOverPanel.SetActive(false);
+        if (pauseMenuPanel != null) pauseMenuPanel.SetActive(false);
+        if (MainUI != null) MainUI.SetActive(false);
+        if (handUI != null) handUI.SetActive(false);
+        if (shopPanel != null) shopPanel.SetActive(false);
+
+        // Show the Main Menu
+        if (startMenuPanel != null) 
+        {
+            startMenuPanel.SetActive(true); 
+        }
+    }
 }
