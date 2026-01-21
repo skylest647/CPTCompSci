@@ -301,23 +301,26 @@ public class GameManager : MonoBehaviour
         HandsRemaining = HandsRemaining - 1;
         selectedIndices.Clear();
 
-        if (HandsRemaining < 1) { EvaluateBlind(); }
-        else { DrawHand(); RefreshHandUI(); }
+        EvaluateBlind();
+        
         SaveGame();
     }
 
     private void EvaluateBlind()
     {
-        if (FinalScore >= BlindGoal)
-        {
-            FinalScore = 0;
-            HandsRemaining = hands;
-            DeckManager.RefillDeck();
-            AdvanceBlind();
-            EconomyManager.AddMoney(10);
-            EnterShop();
-        }
-        else { IsGameOver = true; }
+        if (FinalScore >= BlindGoal){
+                FinalScore = 0;
+                HandsRemaining = hands;
+                DeckManager.RefillDeck();
+                AdvanceBlind();
+                EconomyManager.AddMoney(10);
+                EnterShop();
+            }
+            else if (HandsRemaining < 1){
+                IsGameOver = true;
+            }
+
+        
     }
 
     private void AdvanceBlind()
@@ -375,7 +378,6 @@ public class GameManager : MonoBehaviour
         return new Card(s[Random.Range(0, 4)], v[Random.Range(0, 13)]);
     }
 
-    // --- External Helper Methods ---
     public void SetIsInGame(bool v) { IsInGame = v; }
     public void SaveGame() { SaveSystem.SaveGame(this); }
     public int GetMoney() { return EconomyManager.GetMoney(); }

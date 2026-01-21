@@ -108,6 +108,10 @@ public class HandEvaluator
 
     private bool IsFlush(List<Card> hand)
     {
+        if (hand.Count< 5)
+        {
+            return false;
+        }
         string suit = hand[0].GetSuit();
         foreach (var card in hand)
             if (card.GetSuit() != suit) return false;
@@ -116,6 +120,10 @@ public class HandEvaluator
 
     private bool IsStraight(List<Card> hand)
     {
+        if (hand.Count< 5)
+        {
+            return false;
+        }
         List<int> values = hand.ConvertAll(card => card.GetNumericValue());
         values.Sort();
 
