@@ -5624,7 +5624,7 @@ MonoBehaviour:
   joker2Name: {fileID: 67218270}
   joker2Desc: {fileID: 404076831}
   joker2Cost: {fileID: 1648292510}
-  cardCostText: {fileID: 1648292510}
+  cardCostText: {fileID: 674853996}
   cardImage: {fileID: 1510419567}
   handUIParent: {fileID: 1964273210}
   cardUIPrefab: {fileID: 3148841686271326046, guid: b9adcab0f526849eebb81afcbcbe4160, type: 3}

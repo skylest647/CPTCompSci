@@ -180,18 +180,14 @@ public class GameManager : MonoBehaviour
     // --- Loading Logic ---
     public void LoadGame() 
     {
-        // 1. Force managers to initialize if they haven't
         if (EconomyManager == null) { Start(); }
-        
-        // 2. Run the SaveSystem load
         SaveSystem.LoadGame(this);
-        
-        // 3. Force Game State to be active
         IsInGame = true; 
         IsGameOver = false;
         InShop = false;
         
-        // 4. Update Visuals
+        // Explicitly draw the hand and refresh visuals after loading data
+        DrawHand(); 
         UpdateMainUI();
         RefreshHandUI();
     }
