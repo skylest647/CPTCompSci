@@ -1,29 +1,27 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 public class DeckManager
 {
-    private List<Card> FullDeck;      // Permanent deck with all cards
-    private List<Card> CurrentDeck;   // Deck for the current hand/blind
-    private System.Random rng = new System.Random(); // For shuffling
+    private List<Card> FullDeck;      
+    private List<Card> CurrentDeck;   
+    private System.Random rng = new System.Random(); 
 
     public DeckManager()
     {
-        BuildStandardDeck();
-        RefillDeck();
+        FullDeck = new List<Card>();
+        CurrentDeck = new List<Card>();
     }
 
     public void BuildStandardDeck()
     {
-        FullDeck = new List<Card>();
-
+        FullDeck.Clear();
         string[] suits = { "Hearts", "Diamonds", "Clubs", "Spades" };
         string[] values = { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
 
-        foreach (var suit in suits)
+        foreach (string suit in suits)
         {
-            foreach (var value in values)
+            foreach (string value in values)
             {
                 FullDeck.Add(new Card(suit, value));
             }
@@ -51,44 +49,16 @@ public class DeckManager
     public Card Draw()
     {
         if (CurrentDeck.Count == 0) return null;
-
         Card top = CurrentDeck[0];
         CurrentDeck.RemoveAt(0);
         return top;
     }
 
-    public void AddCard(Card card, bool addToCurrentDeck = true)
+    public List<Card> GetFullDeck() => FullDeck;
+    public List<Card> GetCurrentDeck() => CurrentDeck;
+    public void LoadDecks(List<Card> full, List<Card> current)
     {
-        FullDeck.Add(card);
-        if (addToCurrentDeck)
-            CurrentDeck.Add(card);
-    }
-
-    public bool RemoveCard(Card card)
-    {
-        bool removed = FullDeck.Remove(card);
-        CurrentDeck.Remove(card);
-        return removed;
-    }
-
-    public int CardsRemaining()
-    {
-        return CurrentDeck.Count;
-    }
-
-    public List<Card> GetFullDeck()
-    {
-        return new List<Card>(FullDeck);
-    }
-
-    public List<Card> GetCurrentDeck()
-    {
-        return new List<Card>(CurrentDeck);
-    }
-
-    public void LoadDecks(List<Card> fullDeck, List<Card> currentDeck)
-    {
-        FullDeck = new List<Card>(fullDeck);
-        CurrentDeck = new List<Card>(currentDeck);
+        FullDeck = full;
+        CurrentDeck = current;
     }
 }

@@ -1,4 +1,3 @@
-using UnityEngine;
 using System.Collections.Generic;
 
 public class JokerManager
@@ -18,34 +17,23 @@ public class JokerManager
     public int GetTotalBonusChips(HandResult result, List<Card> hand)
     {
         int total = 0;
-
         foreach (Joker joker in ActiveJokers)
         {
             total += joker.GetBonusChips(result, hand);
         }
-
         return total;
     }
 
     public float GetTotalBonusMultiplier(HandResult result, List<Card> hand)
     {
         float total = 0f;
-
         foreach (Joker joker in ActiveJokers)
         {
             total += joker.GetBonusMultiplier(result, hand);
         }
-
         return total;
     }
 
-    public List<Joker> GetActiveJokers()
-    {
-        return new List<Joker>(ActiveJokers);
-    }
-
-    public void LoadJokers(List<Joker> jokers)
-    {
-        ActiveJokers = new List<Joker>(jokers);
-    }
+    public List<Joker> GetActiveJokers() => ActiveJokers;
+    public void LoadJokers(List<Joker> jokers) => ActiveJokers = jokers;
 }

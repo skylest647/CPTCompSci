@@ -1,113 +1,81 @@
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
+using TMPro; // Added for TextMeshPro
 
 public class MainMenuManager : MonoBehaviour
 {
-    [Header("Menu Panels")]
+    [Header("Panels")]
     [SerializeField] private GameObject mainMenuPanel;
     [SerializeField] private GameObject settingsPanel;
-    
-    [Header("Main Menu Buttons")]
-    [SerializeField] private Button playButton;
-    [SerializeField] private Button settingsButton;
-    [SerializeField] private Button quitButton;
-    
-    [Header("Settings Buttons")]
-    [SerializeField] private Button backButton;
-    
-    [Header("Volume Controls")]
-    [SerializeField] private Slider volumeSlider;
-    
-    [Header("Volume Text")]
-    [SerializeField] private TextMeshProUGUI volumeText;
 
-    private const string VOLUME_KEY = "Volume";
+    [Header("Buttons")]
+    [SerializeField] private Button newRunButton, continueButton, settingsButton, quitButton, backButton;
+
+    [Header("Settings UI")]
+    [SerializeField] private Slider volumeSlider;
+    [SerializeField] private TextMeshProUGUI volumeText; // Changed to TMP
+
+    private bool isTransitioning = false;
 
     private void Start()
     {
-        SetupButtons();
-        LoadVolumeSettings();
-        ShowMainMenu();
-    }
-
-    private void SetupButtons()
-    {
-        playButton.onClick.AddListener(StartGame);
-        settingsButton.onClick.AddListener(ShowSettings);
-        quitButton.onClick.AddListener(QuitGame);
-        
-        backButton.onClick.AddListener(ShowMainMenu);
+        // Add listeners to buttons
+        newRunButton.onClick.AddListener(StartNewGame);
+        continueButton.onClick.AddListener(ContinueGame);
+        settingsButton.onClick.AddListener(() => ToggleSettings(true));
+        backButton.onClick.AddListener(() => ToggleSettings(false));
+        quitButton.onClick.AddListener(Application.Quit);
         
         volumeSlider.onValueChanged.AddListener(OnVolumeChanged);
-    }
-
-    private void LoadVolumeSettings()
-    {
-        float volume = PlayerPrefs.GetFloat(VOLUME_KEY, 0.75f);
         
-        volumeSlider.value = volume;
-        UpdateVolumeText(volumeText, volume);
-        
-        AudioListener.volume = volume;
-    }
-
-    private void OnVolumeChanged(float value)
-    {
-        UpdateVolumeText(volumeText, value);
-        PlayerPrefs.SetFloat(VOLUME_KEY, value);
-        AudioListener.volume = value;
-    }
-
-    private void UpdateVolumeText(TextMeshProUGUI text, float value)
-    {
-        text.text = Mathf.RoundToInt(value * 100) + "%";
-    }
-
-    private void ShowMainMenu()
-    {
+        LoadVolumeSettings();
         mainMenuPanel.SetActive(true);
-        settingsPanel.SetActive(false);
     }
 
-    private void ShowSettings()
+    private void StartNewGame()
     {
-        mainMenuPanel.SetActive(false);
-        settingsPanel.SetActive(true);
-    }
-
-    private void StartGame()
-    {
-        GameManager gameManager = FindFirstObjectByType<GameManager>();
-        
-        if (gameManager != null)
-        {
-            gameManager.StartNewRun();
-            mainMenuPanel.SetActive(false);
-            settingsPanel.SetActive(false);
-            Debug.Log("New game started!");
-        }
-        else
-        {
-            Debug.LogError("GameManager not found in scene!");
+        if (isTransitioning) return;
+        GameManager gm = FindFirstObjectByType<GameManager>();
+        if (gm != null) 
+        { 
+            isTransitioning = true; 
+            mainMenuPanel.SetActive(false); 
+            gm.StartNewRun(); 
+            isTransitioning = false; 
         }
     }
 
-    private void QuitGame()
+    private void ContinueGame()
     {
-        Debug.Log("Quit button pressed!");
-        
-        #if UNITY_EDITOR
-            Debug.Log("Stopping play mode in editor...");
-            UnityEditor.EditorApplication.isPlaying = false;
-        #else
-            Debug.Log("Quitting application...");
-            Application.Quit();
-        #endif
+        // Only load if a save exists and we aren't currently switching scenes
+        if (isTransitioning || !SaveSystem.HasSaveData()) return;
+        GameManager gm = FindFirstObjectByType<GameManager>();
+        if (gm != null) 
+        { 
+            isTransitioning = true; 
+            mainMenuPanel.SetActive(false); 
+            gm.LoadGame(); 
+            isTransitioning = false; 
+        }
     }
 
-    public float GetVolume()
+    private void ToggleSettings(bool show)
     {
-        return PlayerPrefs.GetFloat(VOLUME_KEY, 0.75f);
+        settingsPanel.SetActive(show);
+        mainMenuPanel.SetActive(!show);
+    }
+
+    private void OnVolumeChanged(float v) 
+    { 
+        volumeText.text = Mathf.RoundToInt(v * 100) + "%"; 
+        PlayerPrefs.SetFloat("Volume", v); 
+        AudioListener.volume = v; 
+    }
+
+    private void LoadVolumeSettings() 
+    { 
+        float v = PlayerPrefs.GetFloat("Volume", 0.75f); 
+        volumeSlider.value = v; 
+        OnVolumeChanged(v); 
     }
 }

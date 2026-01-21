@@ -1,27 +1,28 @@
 using UnityEngine;
 using System.Collections.Generic;
+using TMPro;
 
-public enum GamePhase
-{
-    SmallBlind,
-    BigBlind,
-    BossBlind
-}
+// The enum must be outside the class
+public enum GamePhase { SmallBlind, BigBlind, BossBlind }
 
 public class GameManager : MonoBehaviour
 {
     private GamePhase Phase;
     private int Ante;
-    private bool IsGameOver;
-    private bool IsInGame;
-    private bool InShop;
     private int HandSize;
     private int BlindGoal;
     private int HandsRemaining;
     private int FinalScore;
     private int hands = 4;
+    
+    private bool IsGameOver;
+    private bool IsInGame;
+    private bool InShop;
+
     private List<Card> PlayedHand;
     private List<int> selectedIndices = new List<int>();
+
+    // Shop Data
     private Joker shopJoker1;
     private Joker shopJoker2;
     private Card shopCard;
@@ -29,44 +30,46 @@ public class GameManager : MonoBehaviour
     private bool joker1Bought;
     private bool joker2Bought;
     private bool cardBought;
+
+    // Sub-Managers (The Workers)
     private DeckManager DeckManager;
     private HandManager HandManager;
     private JokerManager JokerManager;
     private ScoreManager ScoreManager;
     private EconomyManager EconomyManager;
     private AllJokers allJokers;
-    public GameObject shopPanel;
+
+    [Header("Main UI References")]
     public GameObject MainUI;
-    public UnityEngine.UI.Text joker1Name;
-    public UnityEngine.UI.Text joker2Name;
+    public TextMeshProUGUI moneyText;
+    public TextMeshProUGUI anteText;
+    public TextMeshProUGUI phaseText;
+    public TextMeshProUGUI handSizeText;
+    public TextMeshProUGUI handsRemainingText;
+    public TextMeshProUGUI blindGoalText;
+    public TextMeshProUGUI finalScoreText;
+    
+    [Header("Shop UI References")]
+    public GameObject shopPanel;
+    public TextMeshProUGUI joker1Name;
+    public TextMeshProUGUI joker1Desc;
+    public TextMeshProUGUI joker1Cost;
+    public TextMeshProUGUI joker2Name;
+    public TextMeshProUGUI joker2Desc;
+    public TextMeshProUGUI joker2Cost;
+    public TextMeshProUGUI cardCostText;
     public UnityEngine.UI.Image cardImage;
-    public UnityEngine.UI.Text joker2Desc;
-    public UnityEngine.UI.Text joker1Desc;
-    public UnityEngine.UI.Text joker1Cost;
-    public UnityEngine.UI.Text joker2Cost;
-    public UnityEngine.UI.Text cardCostText;
-    public UnityEngine.UI.Text moneyText;
-    public UnityEngine.UI.Text anteText;
-    public UnityEngine.UI.Text phaseText;
-    public UnityEngine.UI.Text handSizeText;
-    public UnityEngine.UI.Text handsRemainingText;
-    public UnityEngine.UI.Text blindGoalText;
-    public UnityEngine.UI.Text finalScoreText;
-    private float liftAmount = 30f;
-    public Transform handUIParent;        // Horizontal layout group
+
+    [Header("Hand Visuals")]
+    public Transform handUIParent;
     public GameObject cardUIPrefab;
     public GameObject handUI;
-
-
     private List<GameObject> cardUIObjects = new List<GameObject>();
+    private float liftAmount = 30f;
 
     public void Start()
     {
-        InitializeManagers();
-    }
-
-    private void InitializeManagers()
-    {
+        // Initialize all Worker managers
         DeckManager = new DeckManager();
         HandManager = new HandManager();
         EconomyManager = new EconomyManager();
@@ -75,102 +78,232 @@ public class GameManager : MonoBehaviour
         allJokers = new AllJokers();
     }
 
-    public void StartNewRun()
+    public void Update()
     {
-        Ante = 1;
-        Phase = GamePhase.SmallBlind;
-        SetBlindTarget();
-        IsGameOver = false;
-        InShop = false;
-        HandSize = 7;
-        HandsRemaining = hands;
-        PlayedHand = new List<Card>();
-
-        EconomyManager.SetMoney(10);
-
-        DeckManager.BuildStandardDeck();
-        DeckManager.Shuffle();
-        
-        JokerManager = new JokerManager();
-        ScoreManager = new ScoreManager(JokerManager);
-        IsInGame = true;
-        DrawHand();
-        selectedIndices.Clear();
-        RefreshHandUI();
-        SaveGame();
-    }
-
-    public void DrawHand()
-    {
-        HandManager.ClearHand();
-        for (int i = 0; i < HandSize; i++)
+        PauseMenuManager pause = FindFirstObjectByType<PauseMenuManager>();
+        if (pause != null)
         {
-            Card card = DeckManager.Draw();
-            Debug.Log($"Card drawn → Suit: '{card.GetSuit()}', Value: '{card.GetValue()}'");
-
-            if (card == null)
-            {
-                IsGameOver = true;
-                break;
-            }
-
-            HandManager.AddCard(card);
+            if (pause.IsPaused() == true) { return; }
         }
-        if (HandManager.CardsInHand() > 0)
+
+        if (IsGameOver == true)
         {
-            HandManager.SortHand();
-        }
-    }
-    
-    public void PlayHand(List<int> selectedCardIndices)
-    {
-        if (HandManager.CardsInHand() == 0)
-        {
-            IsGameOver = true;
+            IsInGame = false;
+            MainUI.SetActive(false);
             return;
         }
-        PlayedHand.Clear();
-        var hand = HandManager.GetHand();
 
-        foreach (int index in selectedCardIndices)
+        if (IsInGame == true)
         {
-            if (index >= 0 && index < hand.Count)
+            MainUI.SetActive(true);
+            UpdateMainUI();
+        }
+        else
+        {
+            MainUI.SetActive(false);
+        }
+
+        if (InShop == true)
+        {
+            handUI.SetActive(false);
+            shopPanel.SetActive(true);
+            HandleShopInput(); 
+            return;
+        }
+        else
+        {
+            if (IsInGame == true) { handUI.SetActive(true); }
+            shopPanel.SetActive(false);
+        }
+
+        // Gameplay selection
+        if (Input.GetKeyDown(KeyCode.Alpha1)) { ToggleSelection(0); }
+        if (Input.GetKeyDown(KeyCode.Alpha2)) { ToggleSelection(1); }
+        if (Input.GetKeyDown(KeyCode.Alpha3)) { ToggleSelection(2); }
+        if (Input.GetKeyDown(KeyCode.Alpha4)) { ToggleSelection(3); }
+        if (Input.GetKeyDown(KeyCode.Alpha5)) { ToggleSelection(4); }
+        if (Input.GetKeyDown(KeyCode.Alpha6)) { ToggleSelection(5); }
+        if (Input.GetKeyDown(KeyCode.Alpha7)) { ToggleSelection(6); }
+
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            if (selectedIndices.Count > 0)
             {
-                PlayedHand.Add(hand[index]);
+                PlayHand(selectedIndices);
             }
         }
-
-        HandEvaluator evaluator = new HandEvaluator();
-        HandResult result = evaluator.Evaluate(PlayedHand);
-
-        int Score = ScoreManager.CalculateFinalScore(result, PlayedHand);
-
-        FinalScore += Score;
-        PlayedHand.Clear();
-        HandsRemaining--;
-
-        if (HandsRemaining < 1)
-        {
-            EvaluateBlind();
-        }
-        if (!IsGameOver)
-        {
-            DrawHand();
-            selectedIndices.Clear();
-            RefreshHandUI();
-        }
-        
-        SaveGame();
     }
 
-    public void SetBlindTarget()
+    private void HandleShopInput()
     {
-        switch (Phase)
+        if (Input.GetKeyDown(KeyCode.Q)) { ExitShop(); }
+        if (Input.GetKeyDown(KeyCode.Z)) { BuyJoker1(); }
+        if (Input.GetKeyDown(KeyCode.X)) { BuyJoker2(); }
+        if (Input.GetKeyDown(KeyCode.C)) { BuyCard(); }
+    }
+
+    public void StartNewRun()
+    {
+        // Ensure managers are ready
+        if (EconomyManager == null) { Start(); }
+
+        Ante = 1;
+        Phase = GamePhase.SmallBlind;
+        HandSize = 7;
+        BlindGoal = 20;
+        HandsRemaining = hands;
+        FinalScore = 0;
+        EconomyManager.SetMoney(10);
+        
+        DeckManager.BuildStandardDeck();
+        DeckManager.RefillDeck();
+        
+        IsInGame = true;
+        IsGameOver = false;
+        InShop = false;
+        
+        DrawHand();
+        RefreshHandUI();
+    }
+
+    public void UpdateMainUI()
+    {
+        if (moneyText != null) { moneyText.text = "Money: $" + EconomyManager.GetMoney(); }
+        if (anteText != null) { anteText.text = "Ante: " + Ante; }
+        if (handsRemainingText != null) { handsRemainingText.text = "Hands: " + HandsRemaining; }
+        if (blindGoalText != null) { blindGoalText.text = "Goal: " + BlindGoal; }
+        if (finalScoreText != null) { finalScoreText.text = "Score: " + FinalScore; }
+        if (phaseText != null) { phaseText.text = "Phase: " + Phase.ToString(); }
+        if (handSizeText != null) { handSizeText.text = "Hand Size: " + HandSize; }
+    }
+
+    // --- Loading Logic ---
+    public void LoadGame() 
+    {
+        // 1. Force managers to initialize if they haven't
+        if (EconomyManager == null) { Start(); }
+        
+        // 2. Run the SaveSystem load
+        SaveSystem.LoadGame(this);
+        
+        // 3. Force Game State to be active
+        IsInGame = true; 
+        IsGameOver = false;
+        InShop = false;
+        
+        // 4. Update Visuals
+        UpdateMainUI();
+        RefreshHandUI();
+    }
+
+    public void LoadGameState(int a, GamePhase p, int m, int hs, int hr, int fs, int bg)
+    {
+        Ante = a; 
+        Phase = p; 
+        if (EconomyManager != null) { EconomyManager.SetMoney(m); }
+        HandSize = hs; 
+        HandsRemaining = hr; 
+        FinalScore = fs; 
+        BlindGoal = bg;
+        
+        IsInGame = true; // This makes sure the UI turns on
+    }
+
+    public void EnterShop()
+    {
+        InShop = true;
+        joker1Bought = false;
+        joker2Bought = false;
+        cardBought = false;
+
+        shopJoker1 = allJokers.GetRandomJoker();
+        shopJoker2 = allJokers.GetRandomJoker();
+        shopCard = GenerateRandomCard();
+
+        if (joker1Name != null) { joker1Name.text = shopJoker1.GetName(); }
+        if (joker1Desc != null) { joker1Desc.text = shopJoker1.GetDescription(); }
+        if (joker1Cost != null) { joker1Cost.text = "$" + shopJoker1.GetCost(); }
+
+        if (joker2Name != null) { joker2Name.text = shopJoker2.GetName(); }
+        if (joker2Desc != null) { joker2Desc.text = shopJoker2.GetDescription(); }
+        if (joker2Cost != null) { joker2Cost.text = "$" + shopJoker2.GetCost(); }
+
+        if (cardCostText != null) { cardCostText.text = "$" + cardCost; }
+        if (cardImage != null)
         {
-            case GamePhase.SmallBlind: BlindGoal = 20 * Ante; break;
-            case GamePhase.BigBlind: BlindGoal = 30 * Ante; break;
-            case GamePhase.BossBlind: BlindGoal = 50 * Ante; break;
+            cardImage.sprite = Resources.Load<Sprite>("Cards/" + shopCard.GetSuit() + "_" + shopCard.GetValue());
         }
+    }
+
+    public void BuyJoker1()
+    {
+        if (joker1Bought == false && shopJoker1 != null)
+        {
+            int cost = shopJoker1.GetCost();
+            if (EconomyManager.SpendMoney(cost) == true)
+            {
+                JokerManager.AddJoker(shopJoker1);
+                joker1Bought = true;
+                if (joker1Name != null) { joker1Name.text = "BOUGHT"; }
+                if (joker1Desc != null) { joker1Desc.text = ""; }
+                if (joker1Cost != null) { joker1Cost.text = ""; }
+            }
+        }
+    }
+
+    public void BuyJoker2()
+    {
+        if (joker2Bought == false && shopJoker2 != null)
+        {
+            int cost = shopJoker2.GetCost();
+            if (EconomyManager.SpendMoney(cost) == true)
+            {
+                JokerManager.AddJoker(shopJoker2);
+                joker2Bought = true;
+                if (joker2Name != null) { joker2Name.text = "BOUGHT"; }
+                if (joker2Desc != null) { joker2Desc.text = ""; }
+                if (joker2Cost != null) { joker2Cost.text = ""; }
+            }
+        }
+    }
+
+    public void BuyCard()
+    {
+        if (cardBought == false && shopCard != null)
+        {
+            if (EconomyManager.SpendMoney(cardCost) == true)
+            {
+                DeckManager.GetFullDeck().Add(shopCard);
+                cardBought = true;
+                if (cardCostText != null) { cardCostText.text = "SOLD"; }
+            }
+        }
+    }
+
+    public void ExitShop()
+    {
+        InShop = false;
+        DrawHand();
+        RefreshHandUI();
+    }
+
+    public void PlayHand(List<int> indices)
+    {
+        PlayedHand = new List<Card>();
+        List<Card> currentHand = HandManager.GetHand();
+        for (int i = 0; i < indices.Count; i++)
+        {
+            if (indices[i] < currentHand.Count) { PlayedHand.Add(currentHand[indices[i]]); }
+        }
+
+        HandEvaluator eval = new HandEvaluator();
+        FinalScore = FinalScore + ScoreManager.CalculateFinalScore(eval.Evaluate(PlayedHand), PlayedHand);
+        HandsRemaining = HandsRemaining - 1;
+        selectedIndices.Clear();
+
+        if (HandsRemaining < 1) { EvaluateBlind(); }
+        else { DrawHand(); RefreshHandUI(); }
+        SaveGame();
     }
 
     private void EvaluateBlind()
@@ -184,333 +317,77 @@ public class GameManager : MonoBehaviour
             EconomyManager.AddMoney(10);
             EnterShop();
         }
-        else
-        {
-            IsGameOver = true;
-        }
+        else { IsGameOver = true; }
     }
 
     private void AdvanceBlind()
     {
-        switch (Phase)
+        if (Phase == GamePhase.SmallBlind) { Phase = GamePhase.BigBlind; }
+        else if (Phase == GamePhase.BigBlind) { Phase = GamePhase.BossBlind; }
+        else { Phase = GamePhase.SmallBlind; Ante = Ante + 1; }
+        BlindGoal = 20 * Ante * ((int)Phase + 1);
+    }
+
+    public void DrawHand()
+    {
+        HandManager.ClearHand();
+        for (int i = 0; i < HandSize; i++)
         {
-            case GamePhase.SmallBlind: Phase = GamePhase.BigBlind; break;
-            case GamePhase.BigBlind: Phase = GamePhase.BossBlind; break;
-            case GamePhase.BossBlind:
-                Phase = GamePhase.SmallBlind; 
-                Ante++;
-                break;
-
+            Card c = DeckManager.Draw();
+            if (c != null) { HandManager.AddCard(c); }
         }
-        SetBlindTarget();
+        HandManager.SortHand();
     }
 
-    private void EnterShop()
+    private void RefreshHandUI()
     {
-        InShop = true;
-
-        joker1Bought = false;
-        joker2Bought = false;
-        cardBought = false;
-
-        shopJoker1 = allJokers.GetRandomJoker();
-        shopJoker2 = allJokers.GetRandomJoker();
-        
-        joker1Name.text = shopJoker1.GetName();
-        joker2Name.text = shopJoker2.GetName();
-        
-        joker1Desc.text = shopJoker1.GetDescription();
-        joker2Desc.text = shopJoker2.GetDescription();
-
-        joker1Cost.text = shopJoker1.GetCost().ToString();
-        joker2Cost.text = shopJoker2.GetCost().ToString();
-        cardCostText.text = cardCost.ToString();
-
-        shopCard = GenerateRandomCard();
-        cardImage.sprite = GetCardSprite(shopCard);
-        
-    }
-
-    private Sprite GetCardSprite(Card card)
-    {
-        string path = $"Cards/{card.GetSuit()}_{card.GetValue()}";
-        Sprite sprite = Resources.Load<Sprite>(path);
-
-        Debug.Log($"Trying to load: Assets/Resources/{path}");
-
-        if (sprite == null)
-            Debug.LogError($"❌ Sprite NOT found: {path}");
-        else
-            Debug.Log($"✅ Sprite loaded: {sprite.name}");
-
-        return sprite;
-    }
-
-    private void ExitShop()
-    {
-        InShop = false;
-        DrawHand();
-        selectedIndices.Clear();
-        RefreshHandUI();
+        for (int i = 0; i < cardUIObjects.Count; i++) { Destroy(cardUIObjects[i]); }
+        cardUIObjects.Clear();
+        List<Card> currentHand = HandManager.GetHand();
+        for (int i = 0; i < currentHand.Count; i++)
+        {
+            GameObject ui = Instantiate(cardUIPrefab, handUIParent);
+            cardUIObjects.Add(ui);
+            ui.GetComponent<CardUI>().cardImage.sprite = Resources.Load<Sprite>("Cards/" + currentHand[i].GetSuit() + "_" + currentHand[i].GetValue());
+        }
     }
 
     private void ToggleSelection(int index)
     {
-        if (index < 0 || index >= cardUIObjects.Count)
-            return;
-
+        if (index >= cardUIObjects.Count) { return; }
         RectTransform rt = cardUIObjects[index].GetComponent<RectTransform>();
-
         if (selectedIndices.Contains(index))
         {
             selectedIndices.Remove(index);
-            rt.anchoredPosition = Vector2.zero; 
+            rt.anchoredPosition = new Vector2(0, 0);
         }
         else
         {
             selectedIndices.Add(index);
-            rt.anchoredPosition = Vector2.up * liftAmount; 
-        }
-    }
-
-    public void Update()
-    {
-        if (IsGameOver)
-        {
-            IsInGame = false;
-            return;
-        }
-        if (IsInGame)
-        {
-            MainUI.SetActive(true);
-            UpdateMainUI();
-        }
-        else
-        {
-            MainUI.SetActive(false);
-        }
-        if (InShop)
-        {
-            handUI.SetActive(false);
-            HandleShopInput();
-            shopPanel.SetActive(true);
-            return;
-        }
-        else
-        {
-            handUI.SetActive(true);
-            shopPanel.SetActive(false);
-        }
-
-        if (Input.GetKeyDown(KeyCode.Alpha1)) ToggleSelection(0);
-        if (Input.GetKeyDown(KeyCode.Alpha2)) ToggleSelection(1);
-        if (Input.GetKeyDown(KeyCode.Alpha3)) ToggleSelection(2);
-        if (Input.GetKeyDown(KeyCode.Alpha4)) ToggleSelection(3);
-        if (Input.GetKeyDown(KeyCode.Alpha5)) ToggleSelection(4);
-        if (Input.GetKeyDown(KeyCode.Alpha6)) ToggleSelection(5);
-        if (Input.GetKeyDown(KeyCode.Alpha7)) ToggleSelection(6);
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            if (selectedIndices.Count > 0)
-            {
-                PlayHand(selectedIndices);
-                selectedIndices.Clear();
-                RefreshHandUI();
-            }
-        }
-    }
-    private void UpdateMainUI()
-    {
-        moneyText.text = $"Money: {EconomyManager.GetMoney()}";
-        anteText.text = $"Ante: {Ante}";
-        phaseText.text = $"Phase: {Phase}";
-        handSizeText.text = $"Hand Size: {HandSize}";
-        handsRemainingText.text = $"Hands Left: {HandsRemaining}";
-        blindGoalText.text = $"Blind Goal: {BlindGoal}";
-        finalScoreText.text = $"Score: {FinalScore}";
-    }
-    private void RefreshHandUI()
-    {
-        foreach (var obj in cardUIObjects)
-            Destroy(obj);
-
-        cardUIObjects.Clear();
-
-        var hand = HandManager.GetHand();
-        
-        for (int i = 0; i < hand.Count; i++)
-        {
-            Card card = hand[i];
-
-            GameObject uiCard = Instantiate(cardUIPrefab, handUIParent);
-            cardUIObjects.Add(uiCard);
-
-            CardUI cardUI = uiCard.GetComponent<CardUI>();
-            cardUI.cardImage.sprite = GetCardSprite(card);
-
-            var txt = uiCard.GetComponentInChildren<UnityEngine.UI.Text>();
-            if (txt != null)
-                txt.text = $"{card.GetSuit()}_{card.GetValue()}";
-
-            uiCard.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-        }
-    }
-
-    private void HandleShopInput()
-    {
-        if (Input.GetKeyDown(KeyCode.Z))
-            BuyJoker1();
-
-        if (Input.GetKeyDown(KeyCode.X))
-            BuyJoker2();
-
-        if (Input.GetKeyDown(KeyCode.C))
-            BuyCard();
-
-        if (Input.GetKeyDown(KeyCode.Q))
-            ExitShop();
-    }
-
-    private void BuyJoker1()
-    {
-        if (joker1Bought) return;
-        if (EconomyManager.SpendMoney(shopJoker1.GetCost()))
-        {
-            JokerManager.AddJoker(shopJoker1);
-            joker1Bought = true;
-            joker1Cost.text = "SOLD";
-        }
-        
-    }
-
-    private void BuyJoker2()
-    {
-        if (joker2Bought) return;
-
-        if (EconomyManager.SpendMoney(shopJoker2.GetCost()))
-        {
-            JokerManager.AddJoker(shopJoker2);
-            joker2Bought = true;
-            joker2Cost.text = "SOLD";
-        }
-        
-    }
-
-    private void BuyCard()
-    {
-        if (cardBought) return;
-
-        if (EconomyManager.SpendMoney(cardCost))
-        {
-            DeckManager.AddCard(shopCard, true);
-            cardBought = true;
-            cardCostText.text = "SOLD";
+            rt.anchoredPosition = new Vector2(0, liftAmount);
         }
     }
 
     private Card GenerateRandomCard()
     {
-        string[] suits = { "Hearts", "Diamonds", "Clubs", "Spades" };
-        string[] values = { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
-
-        string suit = suits[Random.Range(0, suits.Length)];
-        string value = values[Random.Range(0, values.Length)];
-
-        return new Card(suit, value);
-    }
-    
-
-    public int GetAnte() { 
-        return Ante; 
-        }
-    public GamePhase GetPhase() { 
-        return Phase; 
-        }
-    public int GetMoney() { 
-        return EconomyManager.GetMoney();
-        }
-    public int GetHandSize() { 
-        return HandSize; 
-        }
-    public int GetHandsRemaining() { 
-        return HandsRemaining; 
-        }
-    public int GetFinalScore() {
-        return FinalScore; 
-        }
-    public int GetBlindGoal() {
-        return BlindGoal; 
-        }
-    public bool IsInShop()
-    {
-        return InShop;
-    }
-    public Joker GetShopJoker1()
-    {
-        return shopJoker1;
-    }
-    public Joker GetShopJoker2()
-    {
-        return shopJoker2;
-    }
-    public Card GetShopCard()
-    {
-        return shopCard;
+        string[] s = { "Hearts", "Diamonds", "Clubs", "Spades" };
+        string[] v = { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
+        return new Card(s[Random.Range(0, 4)], v[Random.Range(0, 13)]);
     }
 
-    public List<Card> GetFullDeck()
-    {
-        return DeckManager.GetFullDeck();
-    }
-
-    public List<Card> GetCurrentDeck()
-    {
-        return DeckManager.GetCurrentDeck();
-    }
-
-    public List<Joker> GetActiveJokers()
-    {
-        return JokerManager.GetActiveJokers();
-    }
-
-    public void LoadGameState(int ante, GamePhase phase, int money, int handSize, int handsRemaining, int finalScore, int blindGoal)
-    {
-        Ante = ante;
-        Phase = phase;
-        HandSize = handSize;
-        HandsRemaining = handsRemaining;
-        FinalScore = finalScore;
-        BlindGoal = blindGoal;
-        IsGameOver = false;
-        InShop = false;
-
-        EconomyManager.SetMoney(money);
-    }
-
-    public void LoadDeck(List<Card> fullDeck, List<Card> currentDeck)
-    {
-        DeckManager.LoadDecks(fullDeck, currentDeck);
-    }
-
-    public void LoadJokers(List<Joker> jokers)
-    {
-        JokerManager.LoadJokers(jokers);
-        ScoreManager = new ScoreManager(JokerManager);
-    }
-
-    public void SaveGame()
-    {
-        SaveSystem.SaveGame(this);
-    }
-
-    public void LoadGame()
-    {
-        bool success = SaveSystem.LoadGame(this);
-        if (success)
-        {
-            DrawHand();
-            selectedIndices.Clear();
-            RefreshHandUI();
-        }
-    }
+    // --- External Helper Methods ---
+    public void SetIsInGame(bool v) { IsInGame = v; }
+    public void SaveGame() { SaveSystem.SaveGame(this); }
+    public int GetMoney() { return EconomyManager.GetMoney(); }
+    public int GetAnte() { return Ante; }
+    public GamePhase GetPhase() { return Phase; }
+    public int GetHandSize() { return HandSize; }
+    public int GetHandsRemaining() { return HandsRemaining; }
+    public int GetFinalScore() { return FinalScore; }
+    public int GetBlindGoal() { return BlindGoal; }
+    public List<Card> GetFullDeck() { return DeckManager.GetFullDeck(); }
+    public List<Card> GetCurrentDeck() { return DeckManager.GetCurrentDeck(); }
+    public List<Joker> GetActiveJokers() { return JokerManager.GetActiveJokers(); }
+    public void LoadDeck(List<Card> f, List<Card> c) { DeckManager.LoadDecks(f, c); }
+    public void LoadJokers(List<Joker> j) { JokerManager.LoadJokers(j); ScoreManager = new ScoreManager(JokerManager); }
 }
