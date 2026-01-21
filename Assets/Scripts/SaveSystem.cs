@@ -44,7 +44,7 @@ public static class SaveSystem
             case "Gluttonous Joker": return new GluttonousJoker(); case "Jolly Joker": return new JollyJoker(); case "Zany Joker": return new ZanyJoker(); case "Mad Joker": return new MadJoker();
             case "Crazy Joker": return new CrazyJoker(); case "Devoted Joker": return new DevotedJoker(); case "Sly Joker": return new SlyJoker(); case "Wily Joker": return new WilyJoker();
             case "Clever Joker": return new CleverJoker(); case "Devious Joker": return new DeviousJoker(); case "Crafty Joker": return new CraftyJoker(); case "Half Joker": return new HalfJoker();
-            case "Stuntman": return new StuntmanJoker(); case "Raised Fist": return new RaisedFist(); case "Scared Face": return new ScaredFace(); case "Abstract Joker": return new AbstractJoker();
+            case "Stuntman": return new StuntmanJoker(); case "Scared Face": return new ScaredFace();
             default: return null;
         }
     }

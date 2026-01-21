@@ -298,6 +298,8 @@ public class GameManager : MonoBehaviour
         selectedIndices.Clear();
 
         EvaluateBlind();
+        DrawHand();
+        RefreshHandUI();
         
         SaveGame();
     }
@@ -316,7 +318,6 @@ public class GameManager : MonoBehaviour
                 IsGameOver = true;
             }
 
-        
     }
 
     private void AdvanceBlind()

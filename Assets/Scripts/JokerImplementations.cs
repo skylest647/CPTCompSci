@@ -29,9 +29,7 @@ public class AllJokers
 
             new HalfJoker(),
             new StuntmanJoker(),
-            new RaisedFist(),
             new ScaredFace(),
-            new AbstractJoker()
         };
     }
 
@@ -336,29 +334,16 @@ public class StuntmanJoker : Joker
     public StuntmanJoker()
     {
         Name = "Stuntman";
-        Description = "+250 Chips, -2 hand size";
+        Description = "+250 Chips";
         EffectType = JokerEffectType.Chips;
+        cost = 30;
     }
 
     public override int GetBonusChips(HandResult handResult, List<Card> hand)
     {
         return 250;
     }
-}
 
-public class RaisedFist : Joker
-{
-    public RaisedFist()
-    {
-        Name = "Raised Fist";
-        Description = "+25 Multiplier, doubles if you play your lowest ranked card";
-        EffectType = JokerEffectType.Multiplier;
-    }
-
-    public override float GetBonusMultiplier(HandResult handResult, List<Card> hand)
-    {
-        return 25f;
-    }
 }
 
 public class ScaredFace : Joker
@@ -380,21 +365,5 @@ public class ScaredFace : Joker
                 faceCount++;
         }
         return faceCount * 30;
-    }
-}
-
-public class AbstractJoker : Joker
-{
-    public AbstractJoker()
-    {
-        Name = "Abstract Joker";
-        Description = "+3 Multiplier for each Joker card (currently always +3)";
-        EffectType = JokerEffectType.Multiplier;
-    }
-
-    public override float GetBonusMultiplier(HandResult handResult, List<Card> hand)
-    {
-        return 3f;
-        //not done
     }
 }

@@ -20,7 +20,7 @@ public class ScoreManager
         int finalScore = (int)((baseChips + jokerChips) * (baseMult + jokerMult));
         return finalScore;
     }
-    
+
 //Used AI to find a cleaner way than if, else if 
     private int GetBaseChips(HandType type)
     {
